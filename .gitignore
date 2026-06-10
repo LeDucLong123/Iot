@@ -1,0 +1,12 @@
+.pio
+
+#CUSTOM
+.vscode
+
+homeassistant/config/*
+!homeassistant/config/configuration.yaml
+
+mosquitto/**
+!mosquitto/config/
+mosquitto/config/*
+!mosquitto/config/mosquitto.conf

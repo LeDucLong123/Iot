@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: mosquitto
+    restart: unless-stopped
+
+    ports:
+      - "1883:1883"
+
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+
+    depends_on:
+      - mosquitto
+
+    ports:
+      - "8123:8123"
+
+    volumes:
+      - ./homeassistant/config:/config
+
+    environment:
+      TZ: Asia/Ho_Chi_Minh
+
+    # network_mode: host
