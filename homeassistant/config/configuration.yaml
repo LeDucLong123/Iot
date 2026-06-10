@@ -22,3 +22,14 @@ mqtt:
       command_topic: "home/esp32/led2/set"
       payload_on: "ON"
       payload_off: "OFF"
+
+    - name: "Cua Ra Vao (Servo)"
+      unique_id: door_servo_lock
+      command_topic: "home/esp32/servo/set"
+      state_topic: "home/esp32/servo/state"
+      payload_on: "OPEN"
+      payload_off: "CLOSE"
+      state_on: "OPEN"
+      state_off: "CLOSE"
+      icon: "mdi:door-closed"
+

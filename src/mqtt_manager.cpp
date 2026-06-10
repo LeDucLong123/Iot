@@ -5,6 +5,8 @@
 #include "config.h"
 #include "mqtt_manager.h"
 #include "led_controller.h"
+#include "rfid_servo_manager.h"
+
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -32,6 +34,17 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         setLed2(message == "ON");
     }
+    else if (String(topic) == "home/esp32/servo/set")
+    {
+        if (message == "OPEN")
+        {
+            openDoor();
+        }
+        else if (message == "CLOSE")
+        {
+            closeDoor();
+        }
+    }
 }
 
 void reconnect()
@@ -46,6 +59,7 @@ void reconnect()
 
             client.subscribe("home/esp32/led1/set");
             client.subscribe("home/esp32/led2/set");
+            client.subscribe("home/esp32/servo/set");
 
             Serial.println("Subscribed topics");
         }
@@ -73,4 +87,21 @@ void mqttLoop()
     }
 
     client.loop();
+}
+
+void publishServoState(const char *state)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/servo/state", state, true);
+    }
+}
+
+void publishRfidLog(const char *uid, const char *status)
+{
+    if (client.connected())
+    {
+        String jsonPayload = "{\"uid\":\"" + String(uid) + "\",\"status\":\"" + String(status) + "\"}";
+        client.publish("home/esp32/rfid/log", jsonPayload.c_str());
+    }
 }
