@@ -1,13 +1,17 @@
 #pragma once
 
 #define LED1_PIN 2
-#define LED2_PIN 4
 
-#define LED_RFID_GREEN_PIN 25
-#define LED_RFID_RED_PIN 26
-#define SERVO_PIN 13
+// Cấu hình I2C
+#define I2C_SLAVE_ADDR 0x08
+
+// Các mã lệnh I2C gửi xuống Arduino Uno
+#define I2C_CMD_SERVO 0x01
+#define I2C_CMD_RFID_RED 0x02
+#define I2C_CMD_PHONG_KHACH 0x03
+
 #define RFID_SDA_PIN 5
-#define RFID_RST_PIN 22
+#define RFID_RST_PIN 14
 
 extern const char *WIFI_SSID;
 extern const char *WIFI_PASSWORD;
@@ -17,3 +21,4 @@ extern const int MQTT_PORT;
 
 extern const char *AUTHORIZED_UIDS[];
 extern const int AUTHORIZED_UIDS_COUNT;
+

@@ -1,55 +1,35 @@
 #include <Arduino.h>
 #include <SPI.h>
 #include <MFRC522.h>
-#include <ESP32Servo.h>
 
 #include "config.h"
 #include "rfid_servo_manager.h"
 #include "mqtt_manager.h"
+#include "i2c_master_manager.h"
 
 MFRC522 mfrc522(RFID_SDA_PIN, RFID_RST_PIN);
-Servo myServo;
 
 static bool doorOpen = false;
 static unsigned long doorOpenTime = 0;
-static const unsigned long doorOpenDuration = 3000; // 3 giây tự động đóng
-
-static bool rfidRedActive = false;
-static unsigned long rfidRedTime = 0;
-static const unsigned long ledRedDuration = 3000; // 3 giây tắt LED đỏ
+static const unsigned long doorOpenDuration = 3000; // 3 giây tự động đóng cửa
 
 void initRfidServo()
 {
-    // Cấu hình chân LED RFID
-    pinMode(LED_RFID_GREEN_PIN, OUTPUT);
-    pinMode(LED_RFID_RED_PIN, OUTPUT);
-    digitalWrite(LED_RFID_GREEN_PIN, LOW);
-    digitalWrite(LED_RFID_RED_PIN, LOW);
-
     // Khởi tạo SPI và MFRC522 RFID
     SPI.begin();
     mfrc522.PCD_Init();
-    Serial.println("MFRC522 initialized");
-
-    // Khởi tạo Servo
-    ESP32PWM::allocateTimer(0);
-    ESP32PWM::allocateTimer(1);
-    ESP32PWM::allocateTimer(2);
-    ESP32PWM::allocateTimer(3);
-    myServo.setPeriodHertz(50); // Servo SG90 tiêu chuẩn chạy 50Hz
-    myServo.attach(SERVO_PIN, 500, 2400); // Gán chân và khoảng xung rộng
-    myServo.write(0); // Mặc định ở trạng thái khóa (0 độ)
-    Serial.println("Servo initialized at 0 degrees");
+    Serial.println("MFRC522 initialized on ESP32");
 }
 
 void openDoor()
 {
     if (!doorOpen)
     {
-        myServo.write(90); // Quay servo 90 độ để mở
+        // Gửi lệnh I2C mở cửa sang Arduino Uno (Servo quay 90 độ, bật LED Xanh)
+        sendI2CCommand(I2C_CMD_SERVO, 90);
         doorOpen = true;
         doorOpenTime = millis();
-        Serial.println("Door opened (90 degrees)");
+        Serial.println("Sent Open Door command to Arduino");
         publishServoState("OPEN");
     }
 }
@@ -58,9 +38,10 @@ void closeDoor()
 {
     if (doorOpen)
     {
-        myServo.write(0); // Quay servo về 0 độ để đóng
+        // Gửi lệnh I2C đóng cửa sang Arduino Uno (Servo quay 0 độ, tắt LED Xanh)
+        sendI2CCommand(I2C_CMD_SERVO, 0);
         doorOpen = false;
-        Serial.println("Door closed (0 degrees)");
+        Serial.println("Sent Close Door command to Arduino");
         publishServoState("CLOSE");
     }
 }
@@ -76,14 +57,6 @@ void rfidServoLoop()
     if (doorOpen && (millis() - doorOpenTime >= doorOpenDuration))
     {
         closeDoor();
-        digitalWrite(LED_RFID_GREEN_PIN, LOW); // Tắt đèn xanh báo hiệu
-    }
-
-    // Tự động tắt LED đỏ sau 3 giây
-    if (rfidRedActive && (millis() - rfidRedTime >= ledRedDuration))
-    {
-        digitalWrite(LED_RFID_RED_PIN, LOW);
-        rfidRedActive = false;
     }
 
     // Kiểm tra xem có thẻ RFID mới quẹt hay không
@@ -130,20 +103,14 @@ void rfidServoLoop()
     if (authorized)
     {
         Serial.println("Access Authorized");
-        digitalWrite(LED_RFID_GREEN_PIN, HIGH);
-        digitalWrite(LED_RFID_RED_PIN, LOW); // Đảm bảo tắt LED đỏ
-        rfidRedActive = false;
-
         openDoor();
         publishRfidLog(uidStr.c_str(), "authorized");
     }
     else
     {
         Serial.println("Access Denied");
-        digitalWrite(LED_RFID_RED_PIN, HIGH);
-        rfidRedActive = true;
-        rfidRedTime = millis();
-
+        // Gửi lệnh I2C bật nháy LED Đỏ sang Arduino Uno
+        sendI2CCommand(I2C_CMD_RFID_RED, 1);
         publishRfidLog(uidStr.c_str(), "unauthorized");
     }
 

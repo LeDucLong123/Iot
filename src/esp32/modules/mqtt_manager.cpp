@@ -6,6 +6,7 @@
 #include "mqtt_manager.h"
 #include "led_controller.h"
 #include "rfid_servo_manager.h"
+#include "i2c_master_manager.h"
 
 
 WiFiClient espClient;
@@ -30,9 +31,9 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         setLed1(message == "ON");
     }
-    else if (String(topic) == "home/esp32/led2/set")
+    else if (String(topic) == "home/esp32/led_phong_khach/set")
     {
-        setLed2(message == "ON");
+        sendI2CCommand(I2C_CMD_PHONG_KHACH, message == "ON" ? 1 : 0);
     }
     else if (String(topic) == "home/esp32/servo/set")
     {
@@ -58,7 +59,7 @@ void reconnect()
             Serial.println("Connected");
 
             client.subscribe("home/esp32/led1/set");
-            client.subscribe("home/esp32/led2/set");
+            client.subscribe("home/esp32/led_phong_khach/set");
             client.subscribe("home/esp32/servo/set");
 
             Serial.println("Subscribed topics");

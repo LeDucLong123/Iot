@@ -17,9 +17,9 @@ mqtt:
       payload_on: "ON"
       payload_off: "OFF"
 
-    - name: "LED 2"
-      unique_id: led 2
-      command_topic: "home/esp32/led2/set"
+    - name: "LED Phong Khach"
+      unique_id: led_phong_khach
+      command_topic: "home/esp32/led_phong_khach/set"
       payload_on: "ON"
       payload_off: "OFF"
 
