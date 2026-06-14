@@ -33,3 +33,54 @@ mqtt:
       state_off: "CLOSE"
       icon: "mdi:door-closed"
 
+    - name: "Quat Lam Mat"
+      unique_id: esp32_fan_switch
+      command_topic: "home/esp32/fan/set"
+      state_topic: "home/esp32/fan/state"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:fan"
+
+    - name: "Che Do Quat Tu Dong"
+      unique_id: esp32_fan_mode_switch
+      command_topic: "home/esp32/fan/mode/set"
+      state_topic: "home/esp32/fan/mode/state"
+      payload_on: "auto"
+      payload_off: "manual"
+      state_on: "auto"
+      state_off: "manual"
+      icon: "mdi:robot"
+
+    - name: "Cua So (Servo)"
+      unique_id: window_servo_lock
+      command_topic: "home/esp32/window/set"
+      state_topic: "home/esp32/window/state"
+      payload_on: "OPEN"
+      payload_off: "CLOSE"
+      state_on: "OPEN"
+      state_off: "CLOSE"
+      icon: "mdi:window-closed"
+
+  binary_sensor:
+    - name: "Cam Bien Mua"
+      state_topic: "home/esp32/sensor/rain"
+      payload_on: "ON"
+      payload_off: "OFF"
+      device_class: "moisture"
+      unique_id: esp32_rain_sensor
+
+  sensor:
+    - name: "Nhiet Do"
+      state_topic: "home/esp32/sensor/temperature"
+      unit_of_measurement: "°C"
+      device_class: "temperature"
+      unique_id: esp32_temperature
+
+    - name: "Do Am"
+      state_topic: "home/esp32/sensor/humidity"
+      unit_of_measurement: "%"
+      device_class: "humidity"
+      unique_id: esp32_humidity
+
+
+

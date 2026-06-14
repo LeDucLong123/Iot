@@ -10,8 +10,13 @@
 #define PIN_LED_RFID_RED 9
 #define PIN_SERVO 12
 #define PIN_BUZZER 6
+#define PIN_LED_FAN 5
+#define PIN_SERVO_WINDOW 11
+
+
 
 static Servo doorServo;
+static Servo windowServo;
 
 // Biến volatile dùng trong ngắt I2C
 static volatile uint8_t nextCmd = 0;
@@ -41,15 +46,20 @@ void initI2CSlave()
     pinMode(PIN_LED_RFID_GREEN, OUTPUT);
     pinMode(PIN_LED_RFID_RED, OUTPUT);
     pinMode(PIN_BUZZER, OUTPUT);
+    pinMode(PIN_LED_FAN, OUTPUT);
 
     digitalWrite(PIN_LED_PHONG_KHACH, LOW);
     digitalWrite(PIN_LED_RFID_GREEN, LOW);
     digitalWrite(PIN_LED_RFID_RED, LOW);
     digitalWrite(PIN_BUZZER, LOW);
+    digitalWrite(PIN_LED_FAN, LOW);
 
     // Khởi tạo Servo
     doorServo.attach(PIN_SERVO);
     doorServo.write(0); // Khóa ban đầu
+
+    windowServo.attach(PIN_SERVO_WINDOW);
+    windowServo.write(0); // Cửa sổ đóng ban đầu
 
     // Khởi tạo I2C Slave địa chỉ 0x08
     Wire.begin(0x08);
@@ -127,6 +137,19 @@ void i2cSlaveLoop()
             digitalWrite(PIN_LED_PHONG_KHACH, data == 1 ? HIGH : LOW);
             Serial.print("Living Room LED turned ");
             Serial.println(data == 1 ? "ON" : "OFF");
+            break;
+
+        case 0x04: // Lệnh điều khiển LED Quạt giả lập
+            digitalWrite(PIN_LED_FAN, data == 1 ? HIGH : LOW);
+            Serial.print("Simulated Fan turned ");
+            Serial.println(data == 1 ? "ON" : "OFF");
+            break;
+
+        case 0x05: // Lệnh điều khiển Servo cửa sổ
+            windowServo.write(data);
+            Serial.print("Window Servo rotated to ");
+            Serial.print(data);
+            Serial.println(" degrees");
             break;
 
         default:

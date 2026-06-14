@@ -7,6 +7,10 @@
 #include "led_controller.h"
 #include "rfid_servo_manager.h"
 #include "i2c_master_manager.h"
+#include "dht_manager.h"
+#include "rain_manager.h"
+
+
 
 
 WiFiClient espClient;
@@ -46,6 +50,21 @@ void callback(char *topic, byte *payload, unsigned int length)
             closeDoor();
         }
     }
+    else if (String(topic) == "home/esp32/fan/mode/set")
+    {
+        setFanAutoMode(message == "auto");
+    }
+    else if (String(topic) == "home/esp32/fan/set")
+    {
+        if (!isFanAutoMode())
+        {
+            setFanState(message == "ON");
+        }
+    }
+    else if (String(topic) == "home/esp32/window/set")
+    {
+        setWindowOpenState(message == "OPEN");
+    }
 }
 
 void reconnect()
@@ -61,8 +80,17 @@ void reconnect()
             client.subscribe("home/esp32/led1/set");
             client.subscribe("home/esp32/led_phong_khach/set");
             client.subscribe("home/esp32/servo/set");
+            client.subscribe("home/esp32/fan/mode/set");
+            client.subscribe("home/esp32/fan/set");
+            client.subscribe("home/esp32/window/set");
 
-            Serial.println("Subscribed topics");
+            // Phản hồi đồng bộ trạng thái ban đầu lên HA
+            client.publish("home/esp32/fan/mode/state", isFanAutoMode() ? "auto" : "manual", true);
+            client.publish("home/esp32/fan/state", getFanState() ? "ON" : "OFF", true);
+            client.publish("home/esp32/window/state", getWindowOpenState() ? "OPEN" : "CLOSE", true);
+            client.publish("home/esp32/sensor/rain", isRaining() ? "ON" : "OFF", true);
+
+            Serial.println("Subscribed topics & Synced states");
         }
         else
         {
@@ -104,5 +132,53 @@ void publishRfidLog(const char *uid, const char *status)
     {
         String jsonPayload = "{\"uid\":\"" + String(uid) + "\",\"status\":\"" + String(status) + "\"}";
         client.publish("home/esp32/rfid/log", jsonPayload.c_str());
+    }
+}
+
+void publishTemperature(float temp)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/sensor/temperature", String(temp, 1).c_str(), true);
+    }
+}
+
+void publishHumidity(float hum)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/sensor/humidity", String(hum, 1).c_str(), true);
+    }
+}
+
+void publishFanState(const char *state)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/fan/state", state, true);
+    }
+}
+
+void publishFanModeState(const char *mode)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/fan/mode/state", mode, true);
+    }
+}
+
+void publishRainState(bool raining)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/sensor/rain", raining ? "ON" : "OFF", true);
+    }
+}
+
+void publishWindowState(const char *state)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/window/state", state, true);
     }
 }

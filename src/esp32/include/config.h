@@ -9,6 +9,12 @@
 #define I2C_CMD_SERVO 0x01
 #define I2C_CMD_RFID_RED 0x02
 #define I2C_CMD_PHONG_KHACH 0x03
+#define I2C_CMD_FAN 0x04
+#define I2C_CMD_WINDOW 0x05
+
+#define DHT_PIN 15
+#define DHT_TYPE DHT11
+#define RAIN_SENSOR_PIN 27
 
 #define RFID_SDA_PIN 5
 #define RFID_RST_PIN 14

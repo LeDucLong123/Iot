@@ -5,6 +5,10 @@
 #include "led_controller.h"
 #include "rfid_servo_manager.h"
 #include "i2c_master_manager.h"
+#include "dht_manager.h"
+#include "rain_manager.h"
+
+
 
 
 void setup()
@@ -14,6 +18,8 @@ void setup()
     initLeds();
     initI2CMaster();
     initRfidServo();
+    initDHT();
+    initRain();
 
     connectWifi();
 
@@ -24,4 +30,6 @@ void loop()
 {
     mqttLoop();
     rfidServoLoop();
+    dhtLoop();
+    rainLoop();
 }
