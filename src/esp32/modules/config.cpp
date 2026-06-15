@@ -3,7 +3,7 @@
 const char *WIFI_SSID = "402 Van La";
 const char *WIFI_PASSWORD = "0984378397";
 
-const char *MQTT_SERVER = "192.168.42.7";
+const char *MQTT_SERVER = "192.168.42.3";
 const int MQTT_PORT = 1883;
 
 // Danh sách các UID thẻ hợp lệ (dạng viết hoa, cách nhau bởi dấu cách)

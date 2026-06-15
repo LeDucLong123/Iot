@@ -9,8 +9,9 @@
 #define PIN_LED_RFID_GREEN 8
 #define PIN_LED_RFID_RED 9
 #define PIN_SERVO 12
-#define PIN_BUZZER 6
-#define PIN_LED_FAN 5
+#define PIN_LED_BEP 6
+#define PIN_LED_PHONG_NGU 5
+#define PIN_LED_NHA_VE_SINH 4
 #define PIN_SERVO_WINDOW 11
 
 
@@ -45,14 +46,16 @@ void initI2CSlave()
     pinMode(PIN_LED_PHONG_KHACH, OUTPUT);
     pinMode(PIN_LED_RFID_GREEN, OUTPUT);
     pinMode(PIN_LED_RFID_RED, OUTPUT);
-    pinMode(PIN_BUZZER, OUTPUT);
-    pinMode(PIN_LED_FAN, OUTPUT);
+    pinMode(PIN_LED_BEP, OUTPUT);
+    pinMode(PIN_LED_PHONG_NGU, OUTPUT);
+    pinMode(PIN_LED_NHA_VE_SINH, OUTPUT);
 
     digitalWrite(PIN_LED_PHONG_KHACH, LOW);
     digitalWrite(PIN_LED_RFID_GREEN, LOW);
     digitalWrite(PIN_LED_RFID_RED, LOW);
-    digitalWrite(PIN_BUZZER, LOW);
-    digitalWrite(PIN_LED_FAN, LOW);
+    digitalWrite(PIN_LED_BEP, LOW);
+    digitalWrite(PIN_LED_PHONG_NGU, LOW);
+    digitalWrite(PIN_LED_NHA_VE_SINH, LOW);
 
     // Khởi tạo Servo
     doorServo.attach(PIN_SERVO);
@@ -82,10 +85,6 @@ void i2cSlaveLoop()
     static bool ledRedActive = false;
     static unsigned long ledRedTime = 0;
     const unsigned long ledRedDuration = 3000; // 3 giây tự động tắt LED đỏ
-
-    static bool buzzerActive = false;
-    static unsigned long buzzerTime = 0;
-    const unsigned long buzzerDuration = 1000; // 1 giây còi báo lỗi kêu
 
     // Xử lý lệnh mới từ ngắt I2C
     if (hasNewCommand)
@@ -125,11 +124,7 @@ void i2cSlaveLoop()
                 digitalWrite(PIN_LED_RFID_RED, HIGH);
                 ledRedActive = true;
                 ledRedTime = millis();
-
-                tone(PIN_BUZZER, 1000); // Phát âm báo lỗi 1000Hz
-                buzzerActive = true;
-                buzzerTime = millis();
-                Serial.println("LED Red ON & Buzzer Alarm ON for unauthorized card");
+                Serial.println("LED Red ON for unauthorized card");
             }
             break;
 
@@ -139,9 +134,21 @@ void i2cSlaveLoop()
             Serial.println(data == 1 ? "ON" : "OFF");
             break;
 
-        case 0x04: // Lệnh điều khiển LED Quạt giả lập
-            digitalWrite(PIN_LED_FAN, data == 1 ? HIGH : LOW);
-            Serial.print("Simulated Fan turned ");
+        case 0x06: // Lệnh điều khiển Đèn Bếp
+            digitalWrite(PIN_LED_BEP, data == 1 ? HIGH : LOW);
+            Serial.print("Kitchen LED turned ");
+            Serial.println(data == 1 ? "ON" : "OFF");
+            break;
+
+        case 0x07: // Lệnh điều khiển Đèn Phòng Ngủ
+            digitalWrite(PIN_LED_PHONG_NGU, data == 1 ? HIGH : LOW);
+            Serial.print("Bedroom LED turned ");
+            Serial.println(data == 1 ? "ON" : "OFF");
+            break;
+
+        case 0x08: // Lệnh điều khiển Đèn Nhà Vệ Sinh
+            digitalWrite(PIN_LED_NHA_VE_SINH, data == 1 ? HIGH : LOW);
+            Serial.print("Bathroom LED turned ");
             Serial.println(data == 1 ? "ON" : "OFF");
             break;
 
@@ -165,13 +172,5 @@ void i2cSlaveLoop()
         digitalWrite(PIN_LED_RFID_RED, LOW);
         ledRedActive = false;
         Serial.println("LED Red auto-turned OFF");
-    }
-
-    // Tự động tắt còi báo sau 1 giây
-    if (buzzerActive && (millis() - buzzerTime >= buzzerDuration))
-    {
-        noTone(PIN_BUZZER);
-        buzzerActive = false;
-        Serial.println("Buzzer Alarm auto-turned OFF");
     }
 }

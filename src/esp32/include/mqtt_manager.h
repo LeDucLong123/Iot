@@ -15,6 +15,9 @@ void publishFanModeState(const char *mode);
 
 void publishRainState(bool raining);
 void publishWindowState(const char *state);
+void publishBathroomLightState(bool state);
+void publishEarthquakeState(bool isQuake);
+void publishGasState(bool isLeaking);
 
 
 

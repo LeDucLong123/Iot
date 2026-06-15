@@ -10,6 +10,10 @@ static bool windowOpen = false;
 static unsigned long lastRainCheckTime = 0;
 static const unsigned long rainCheckInterval = 500; // Kiểm tra cảm biến mưa mỗi 500ms
 
+static bool waitingToAutoOpen = false;
+static unsigned long dryStartTime = 0;
+static const unsigned long autoOpenDelay = 5000; // Đợi 5 giây sau khi hết mưa mới mở chắn
+
 void initRain()
 {
     pinMode(RAIN_SENSOR_PIN, INPUT);
@@ -30,21 +34,25 @@ bool getWindowOpenState()
 
 void setWindowOpenState(bool open)
 {
-    if (open && raining)
+    // open = true: Bật tấm chắn (che mưa)
+    // open = false: Tắt tấm chắn (mở ra cho thoáng)
+
+    if (!open && raining)
     {
-        Serial.println("[Rain Manager] Warning: Cannot open window while it is raining!");
-        publishWindowState("CLOSE"); // Ép trạng thái nút nhấn trên HA về CLOSE
+        Serial.println("[Rain Manager] Warning: Cannot deactivate shield while it is raining!");
+        publishWindowState("OPEN"); // Trả lại trạng thái BẬT trên HA
         return;
     }
 
     if (windowOpen != open)
     {
         windowOpen = open;
-        Serial.print("Window state changed to: ");
-        Serial.println(open ? "OPEN" : "CLOSE");
+        Serial.print("Shield state changed to: ");
+        Serial.println(open ? "ACTIVE (0 deg)" : "INACTIVE (90 deg)");
 
         // Gửi lệnh I2C điều khiển Servo cửa sổ sang Arduino Uno
-        sendI2CCommand(I2C_CMD_WINDOW, open ? 90 : 0);
+        // (Đảo ngược góc: OPEN (không chắn) = 0 độ, CLOSE (chắn mưa) = 90 độ)
+        sendI2CCommand(I2C_CMD_WINDOW, open ? 0 : 90);
 
         // Phản hồi trạng thái lên Home Assistant
         publishWindowState(open ? "OPEN" : "CLOSE");
@@ -69,11 +77,37 @@ void rainLoop()
             // Publish trạng thái mưa lên MQTT
             publishRainState(raining);
 
-            // Nếu phát hiện trời mưa và cửa sổ đang mở -> Tiến hành tự động đóng cửa sổ
-            if (raining && windowOpen)
+            if (raining)
             {
-                Serial.println("[Rain Manager] Rain detected! Force closing the window...");
-                setWindowOpenState(false);
+                waitingToAutoOpen = false; // Hủy lệnh tự mở nếu bỗng nhiên mưa lại
+                // Trời mưa -> Bật tấm chắn (Mức TRUE)
+                if (!windowOpen)
+                {
+                    Serial.println("[Rain Manager] Rain detected! Shielding ON...");
+                    setWindowOpenState(true);
+                }
+            }
+            else
+            {
+                // Hết mưa -> Bắt đầu đếm ngược thời gian để tắt tấm chắn
+                waitingToAutoOpen = true;
+                dryStartTime = currentMillis;
+                Serial.println("[Rain Manager] Rain stopped. Waiting 5 seconds before removing shield...");
+            }
+        }
+
+        // Kiểm tra xem đã hết thời gian chờ (5 giây) để tự tắt chắn chưa
+        if (!raining && waitingToAutoOpen)
+        {
+            if (currentMillis - dryStartTime >= autoOpenDelay)
+            {
+                waitingToAutoOpen = false;
+                // Chỉ tắt chắn nếu như hiện tại đang bật (nếu user tự tắt rồi thì thôi)
+                if (windowOpen)
+                {
+                    Serial.println("[Rain Manager] 5 seconds passed! Removing shield...");
+                    setWindowOpenState(false);
+                }
             }
         }
     }

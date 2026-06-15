@@ -61,6 +61,28 @@ mqtt:
       state_off: "CLOSE"
       icon: "mdi:window-closed"
 
+    - name: "Đèn Bếp"
+      unique_id: esp32_led_bep
+      command_topic: "home/esp32/led_bep/set"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:wall-sconce-flat"
+
+    - name: "Đèn Phòng Ngủ"
+      unique_id: esp32_led_phong_ngu
+      command_topic: "home/esp32/led_phong_ngu/set"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:bed"
+
+    - name: "Đèn Nhà Vệ Sinh"
+      unique_id: esp32_led_nha_ve_sinh
+      command_topic: "home/esp32/led_nha_ve_sinh/set"
+      state_topic: "home/esp32/led_nha_ve_sinh/state"
+      payload_on: "ON"
+      payload_off: "OFF"
+      icon: "mdi:shower-head"
+
   binary_sensor:
     - name: "Cam Bien Mua"
       state_topic: "home/esp32/sensor/rain"
@@ -68,6 +90,20 @@ mqtt:
       payload_off: "OFF"
       device_class: "moisture"
       unique_id: esp32_rain_sensor
+
+    - name: "Cảnh Báo Động Đất"
+      state_topic: "home/esp32/sensor/earthquake"
+      payload_on: "ON"
+      payload_off: "OFF"
+      device_class: "vibration"
+      unique_id: esp32_earthquake_sensor
+
+    - name: "Cảnh Báo Khí Gas"
+      state_topic: "home/esp32/sensor/gas"
+      payload_on: "ON"
+      payload_off: "OFF"
+      device_class: "gas"
+      unique_id: esp32_gas_sensor
 
   sensor:
     - name: "Nhiet Do"
@@ -82,5 +118,12 @@ mqtt:
       device_class: "humidity"
       unique_id: esp32_humidity
 
-
-
+switch:
+  - platform: group
+    name: "Tất Cả Đèn"
+    entities:
+      - switch.led_1
+      - switch.led_phong_khach
+      - switch.den_bep
+      - switch.den_phong_ngu
+      - switch.den_nha_ve_sinh

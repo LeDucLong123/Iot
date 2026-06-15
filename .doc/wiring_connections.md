@@ -42,6 +42,35 @@ Tài liệu này tổng hợp toàn bộ các kết nối chân giữa ESP32, Ar
     *   Cực dương (+) - Điện trở 220Ω - Chân GPIO 2 của ESP32
     *   Cực âm (-) - Chân GND của ESP32
 
+*   **Màn hình LCD I2C (1602 hoặc 2004)**
+    *   Chân GND - Chân GND của ESP32 (hoặc cắm vào Breadboard chung)
+    *   Chân VCC - Chân 5V hoặc VIN của ESP32 (Cần 5V để màn hình sáng)
+    *   Chân SDA - Chân GPIO 21 của ESP32 (Cắm chung với đường SDA sang Arduino)
+    *   Chân SCL - Chân GPIO 22 của ESP32 (Cắm chung với đường SCL sang Arduino)
+
+*   **Cảm biến siêu âm HC-SR04 (Radar Nhà Vệ Sinh)**
+    *   Chân VCC - Chân VIN (5V) của ESP32
+    *   Chân GND - Chân GND của ESP32
+    *   Chân TRIG - Chân GPIO 25 của ESP32
+    *   Chân ECHO - Chân GPIO 26 của ESP32
+
+*   **Cảm biến Rung (Cảnh báo động đất)**
+    *   Chân VCC - Chân 3V3 (hoặc 5V tùy module) của ESP32
+    *   Chân GND - Chân GND của ESP32
+    *   Chân DO - Chân GPIO 32 của ESP32
+
+*   **Cảm biến Khí Gas (Cảnh báo rò rỉ - Dùng chung còi)**
+    *   Chân VCC - Chân VIN (5V) của ESP32 (MQ cần nguồn 5V để làm nóng màng cảm biến)
+    *   Chân GND - Chân GND của ESP32
+    *   Chân DO - Chân **GPIO 4 (D4)** của ESP32
+
+*   **Còi Báo Động (Active Buzzer)**
+    *   Chân VCC (+) - Chân GPIO 33 của ESP32
+    *   Chân GND (-) - Chân GND của ESP32
+
+*   **Quạt Làm Mát (Qua Module L298N)**
+    *   Chân Tín hiệu (IN1 / INA) - Chân **GPIO 12 (D12)** của ESP32. (Chân IN2/INB để hở hoặc nối GND).
+    *   Chân Nguồn - Lấy nguồn rời cấp vào cổng 12V/5V của L298N, chân GND nối chung với GND của mạch.
 ---
 
 ## 3. Các thiết bị nối vào Arduino Uno (Slave)

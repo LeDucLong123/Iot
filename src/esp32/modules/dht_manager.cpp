@@ -19,8 +19,10 @@ const float TEMP_THRESHOLD = 30.0; // Ngưỡng nhiệt độ bật quạt
 
 void initDHT()
 {
+    pinMode(FAN_PIN, OUTPUT);
+    digitalWrite(FAN_PIN, LOW); // Tắt quạt ban đầu
     dht.begin();
-    Serial.println("DHT Sensor initialized");
+    Serial.println("DHT Sensor & Fan initialized");
 }
 
 float getTemperature()
@@ -62,8 +64,8 @@ void setFanState(bool state)
         Serial.print("Fan state changed to: ");
         Serial.println(state ? "ON" : "OFF");
 
-        // Gửi lệnh I2C điều khiển quạt sang Arduino Uno
-        sendI2CCommand(I2C_CMD_FAN, state ? 1 : 0);
+        // Điều khiển chân D12 của ESP32 để bật/tắt Relay hoặc Transistor nối với quạt
+        digitalWrite(FAN_PIN, state ? HIGH : LOW);
 
         // Phản hồi trạng thái lên Home Assistant
         publishFanState(state ? "ON" : "OFF");

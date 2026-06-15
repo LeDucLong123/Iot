@@ -39,6 +39,20 @@ void callback(char *topic, byte *payload, unsigned int length)
     {
         sendI2CCommand(I2C_CMD_PHONG_KHACH, message == "ON" ? 1 : 0);
     }
+    else if (String(topic) == "home/esp32/led_bep/set")
+    {
+        sendI2CCommand(I2C_CMD_BEP, message == "ON" ? 1 : 0);
+    }
+    else if (String(topic) == "home/esp32/led_phong_ngu/set")
+    {
+        sendI2CCommand(I2C_CMD_PHONG_NGU, message == "ON" ? 1 : 0);
+    }
+    else if (String(topic) == "home/esp32/led_nha_ve_sinh/set")
+    {
+        bool turnOn = (message == "ON");
+        sendI2CCommand(I2C_CMD_NHA_VE_SINH, turnOn ? 1 : 0);
+        publishBathroomLightState(turnOn);
+    }
     else if (String(topic) == "home/esp32/servo/set")
     {
         if (message == "OPEN")
@@ -79,6 +93,9 @@ void reconnect()
 
             client.subscribe("home/esp32/led1/set");
             client.subscribe("home/esp32/led_phong_khach/set");
+            client.subscribe("home/esp32/led_bep/set");
+            client.subscribe("home/esp32/led_phong_ngu/set");
+            client.subscribe("home/esp32/led_nha_ve_sinh/set");
             client.subscribe("home/esp32/servo/set");
             client.subscribe("home/esp32/fan/mode/set");
             client.subscribe("home/esp32/fan/set");
@@ -180,5 +197,29 @@ void publishWindowState(const char *state)
     if (client.connected())
     {
         client.publish("home/esp32/window/state", state, true);
+    }
+}
+
+void publishBathroomLightState(bool state)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/led_nha_ve_sinh/state", state ? "ON" : "OFF", true);
+    }
+}
+
+void publishEarthquakeState(bool isQuake)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/sensor/earthquake", isQuake ? "ON" : "OFF", true);
+    }
+}
+
+void publishGasState(bool isLeaking)
+{
+    if (client.connected())
+    {
+        client.publish("home/esp32/sensor/gas", isLeaking ? "ON" : "OFF", true);
     }
 }
