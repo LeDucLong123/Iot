@@ -8,7 +8,7 @@
 
 static DHT dht(DHT_PIN, DHT_TYPE);
 
-static bool fanAutoMode = true;
+static bool fanAutoMode = false;
 static bool fanState = false;
 static float temperature = 0.0;
 static float humidity = 0.0;

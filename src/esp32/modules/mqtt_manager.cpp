@@ -70,10 +70,8 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
     else if (String(topic) == "home/esp32/fan/set")
     {
-        if (!isFanAutoMode())
-        {
-            setFanState(message == "ON");
-        }
+        setFanAutoMode(false); // Tự động chuyển sang chế độ thủ công khi bấm nút điều khiển tay
+        setFanState(message == "ON");
     }
     else if (String(topic) == "home/esp32/window/set")
     {

@@ -127,3 +127,11 @@ switch:
       - switch.den_bep
       - switch.den_phong_ngu
       - switch.den_nha_ve_sinh
+
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - ::1
+    - 172.16.0.0/12
+    - 192.168.0.0/16

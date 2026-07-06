@@ -86,6 +86,10 @@ void i2cSlaveLoop()
     static unsigned long ledRedTime = 0;
     const unsigned long ledRedDuration = 3000; // 3 giây tự động tắt LED đỏ
 
+    static bool buzzerActive = false;
+    static unsigned long buzzerTime = 0;
+    const unsigned long buzzerDuration = 1000; // 1 giây tự động tắt còi
+
     // Xử lý lệnh mới từ ngắt I2C
     if (hasNewCommand)
     {
@@ -118,13 +122,19 @@ void i2cSlaveLoop()
             }
             break;
 
-        case 0x02: // Lệnh nháy LED Đỏ báo thẻ sai
+        case 0x02: // Lệnh nháy LED Đỏ báo thẻ sai & kêu còi
             if (data == 1)
             {
                 digitalWrite(PIN_LED_RFID_RED, HIGH);
                 ledRedActive = true;
                 ledRedTime = millis();
-                Serial.println("LED Red ON for unauthorized card");
+
+                // Bật còi báo quẹt thẻ sai (nối chân D6)
+                digitalWrite(PIN_LED_BEP, HIGH); 
+                buzzerActive = true;
+                buzzerTime = millis();
+                
+                Serial.println("LED Red & Buzzer ON for unauthorized card");
             }
             break;
 
@@ -172,5 +182,13 @@ void i2cSlaveLoop()
         digitalWrite(PIN_LED_RFID_RED, LOW);
         ledRedActive = false;
         Serial.println("LED Red auto-turned OFF");
+    }
+
+    // Tự động tắt còi sau 1 giây
+    if (buzzerActive && (millis() - buzzerTime >= buzzerDuration))
+    {
+        digitalWrite(PIN_LED_BEP, LOW);
+        buzzerActive = false;
+        Serial.println("Buzzer auto-turned OFF");
     }
 }
